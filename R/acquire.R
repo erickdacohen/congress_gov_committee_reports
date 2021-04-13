@@ -88,10 +88,19 @@ iarpc_df <-
     lead_contact = str_replace_all(lead_contact, "Lead contact:", ""),
     alignment = str_trim(alignment) %>%
       str_replace_all("Alignment with 2016 Arctic Science Ministerial Deliverable: ", "") %>%
-      str_replace_all("Alignment", "")
+      str_replace_all("Alignment", "") %>%
+      str_trim()
   ) %>%
   separate_rows(agency, sep = ", ") %>%
-  separate_rows(alignment, sep = ", ")
+  separate_rows(alignment, sep = ", ") %>%
+  # The first agency listed is for each section is the lead. Adding a boolean
+  # for lead agency
+  group_by(section_title) %>%
+  mutate(
+    is_lead_agency = if_else(row_number() == 1, TRUE, FALSE)
+    ) %>%
+  ungroup() %>%
+  mutate(alignment = if_else(alignment == "", NA_integer_, as.integer(alignment)))
 
 
 saveRDS(
