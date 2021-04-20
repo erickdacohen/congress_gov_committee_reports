@@ -1,87 +1,134 @@
-library(dplyr)
-library(stringr)
-library(rvest)
-library(purrr)
-library(tidyr)
+suppressPackageStartupMessages({
+  library(dplyr)
+  library(stringr)
+  library(rvest)
+  library(purrr)
+  library(tidyr)
+  library(xml2)
+  library(readr)
+})
 
 
 html_files <-
   list.files("data-raw", pattern = "*.html", full.names = TRUE)
 
-iaprc_html_list <-
-  purrr::map(
+html_files[6] %>%
+  read_html() %>%
+  html_nodes("h1, h2, .title, ul.details > li") %>%
+  html_text()
+
+
+iarpc_html_list <-
+  map(
     html_files,
 
-    ~xml2::read_html(.x) %>%
-      html_nodes("li.current")
-  ) %>%
-  purrr::map(
-    ~ .x %>%
-      # html_nodes(".title, ul.details > li") %>%
+    ~ read_html(.x) %>%
       html_nodes("h1, h2, .title, ul.details > li") %>%
       html_text()
   )
 
 
 
-html_mat <-
-  map(
-    html_files,
-    ~ xml2::read_html(.x) %>%
-      html_nodes("li.current") %>%
-      html_nodes(".title, ul.details > li") %>%
-      html_text()
-  )
-
 html_df <-
-  html_mat %>%
+  iarpc_html_list %>%
   unlist() %>%
-  tibble::tibble() %>%
+  tibble() %>%
   mutate(
-    is_title = str_detect(., "^([:digit:])"),
-    section_title = if_else(is_title, ., NA_character_)
-  ) %>%
-  rename(c("iarpc_html" = .)) %>%
+    research_goal = if_else(
+      str_detect(., "^Performance elements assigned to*"),
+      .,
+      NA_character_
+      )
+    ) %>%
+  fill(research_goal) %>%
+  filter(. != research_goal) %>%
+  mutate(research_goal = str_remove_all(
+    research_goal,
+    "Performance elements assigned to the ")
+    ) %>%
+  mutate(
+    section_title = if_else(
+      str_detect(., "^([:digit:])\\.([:digit:])\\s"),
+      .,
+      NA_character_
+      )
+    ) %>%
   fill(section_title) %>%
-  filter(!is_title) %>%
-  select(!is_title) %>%
-  add_count(section_title) %>%
-  group_by(section_title) %>%
-  group_split() %>%
-  map(
-    function(.x){
-      add_row(.x, iarpc_html = "Lead contact:") %>%
-      add_row(iarpc_html = "Alignment") %>%
-        fill(section_title) %>%
-        group_by(section_title) %>%
-        filter(row_number() < 5) %>%
-        ungroup()
-  }
+  filter(
+    . != section_title
   ) %>%
-  bind_rows()
+  mutate(
+    task = if_else(
+      str_detect(., "^([:digit:])"),
+      .,
+      NA_character_
+    )
+  ) %>%
+  fill(task) %>%
+  filter(
+    . != task
+  ) %>%
+  ## edited 2021-04-18
+  mutate(
+    agency = if_else(
+      str_detect(., "^Agency: "),
+      .,
+      NA_character_
+    )
+  ) %>%
+  group_by(task) %>%
+  fill(agency) %>%
+  ungroup() %>%
+  filter(. != agency) %>%
 
+  mutate(
+    lead_contact = if_else(
+      str_detect(., "Lead contact:"),
+      .,
+      NA_character_
+    )
+  ) %>%
+  group_by(task) %>%
+  fill(lead_contact) %>%
+  ungroup() %>%
+  filter(. != lead_contact | is.na(lead_contact)) %>% # KEEP NA'S WHEN FILTERING!!
+
+  mutate(
+    last_update = if_else(
+      str_detect(., "Last update: "),
+      .,
+      NA_character_
+    )
+  ) %>%
+  group_by(task) %>%
+  fill(last_update) %>%
+  ungroup() %>%
+  filter(. != last_update | is.na(last_update) | is.na(lead_contact)) %>%
+
+  mutate(
+    alignment = if_else(
+      str_detect(., "Alignment"),
+      .,
+      NA_character_
+    )
+  ) %>%
+  group_by(task) %>%
+  fill(alignment, .direction = "up") %>%
+  ungroup() %>%
+  # filter(. != alignment | is.na(alignment) | is.na(last_update) | is.na(lead_contact)) %>%
+  select(-.) %>%
+  distinct()
+
+## Save html_df as a back-up
+write_csv(
+  html_df,
+  file = paste0("data-output/", Sys.Date(), "_iarpc_nested.csv")
+)
+
+# now clean and separate rows
 
 iarpc_df <-
   html_df %>%
-  mutate(
-    section_title,
-    is_agency = str_detect(iarpc_html, pattern = "Agency: *"),
-    is_last_update = str_detect(iarpc_html, pattern = "Last update:"),
-    is_lead_contact = str_detect(iarpc_html, pattern = "Lead contact:"),
-    is_alignment = str_detect(iarpc_html, pattern = "Alignment"),
-
-    agency = if_else(is_agency, iarpc_html, NA_character_),
-    last_update = if_else(is_last_update, iarpc_html, NA_character_),
-    lead_contact = if_else(is_lead_contact, iarpc_html, NA_character_),
-    alignment = if_else(is_alignment, iarpc_html, NA_character_)
-  ) %>%
-  select(
-    -c(starts_with("is_"), iarpc_html, n)
-  ) %>%
-  group_by(section_title) %>%
-  fill(c(agency:alignment)) %>%
-  ungroup() %>%
-  na.omit(alignment) %>%
   mutate(
     agency = str_replace_all(agency, "Agency: ", ""),
     last_update = str_replace_all(last_update, "Last update: ", ""),
@@ -98,17 +145,27 @@ iarpc_df <-
   group_by(section_title) %>%
   mutate(
     is_lead_agency = if_else(row_number() == 1, TRUE, FALSE)
-    ) %>%
+  ) %>%
   ungroup() %>%
-  mutate(alignment = if_else(alignment == "", NA_integer_, as.integer(alignment)))
+  mutate(alignment = if_else(alignment == "", NA_integer_, as.integer(alignment))) %>%
+  # add columns for priority areas
+  mutate(
+    is_related_to_priority_area_1 = "",
+    is_related_to_priority_area_2 = "",
+    is_related_to_priority_area_3 = "",
+    is_related_to_priority_area_4 = ""
+  )
 
+stopifnot(
+  unique(html_df$task) %in% unique(iarpc_df$task)
+)
 
 saveRDS(
   iarpc_df,
   file = paste0("data-output/", Sys.Date(), "_iarpc_df.RDS")
 )
 
-readr::write_csv(
+write_csv(
   iarpc_df,
   file = paste0("data-output/", Sys.Date(), "_iarpc_df.csv")
 )
