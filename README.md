@@ -4,5 +4,14 @@ These scripts were intended to collect PDF committee reports from congress.gov r
 
 ## Scripts 
 
-* acquire_comittee_reports_pdf.ipynb 
-Thi
+1. acquire_comittee_reports_pdf.ipynb 
+
+This notebook takes an excel document downloaded from [Congress.gov](https://www.congress.gov/search?q={%22source%22:%22comreports%22}&searchResultViewType=expanded) and downloads the corresponding PDFs of the committee reports if available. The file is downloaded when pressing the *download results* button. It may take hours to run. 
+
+It was intended to be used with ktrain's end-to-end question answering capability
+
+2. arctic_eeqa.ipynb
+
+This notebook takes the outputs from the *acquire_comittee_reports_pdf.ipynb* to ask questions of the committee reports
+
+
