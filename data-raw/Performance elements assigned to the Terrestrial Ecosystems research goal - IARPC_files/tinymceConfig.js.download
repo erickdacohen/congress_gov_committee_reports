@@ -1,0 +1,161 @@
+﻿/*---------------------------------------------------------------+
+ | Change names of formatting options for smaller blocks of text |
+ +---------------------------------------------------------------*/
+
+tinymce.addI18n('', {
+	theme_p : 'Normal',
+	theme_h3 : 'Subhead'
+});
+
+/*-----------------------------+
+ | Mention source handler      |
+ +-----------------------------*/
+
+var mentionSourceCache = {};
+var mentionLastQuery = null;
+
+var mentionSourceHandler = function (query, process, delimiter) {
+  var type = '';
+  if (delimiter === '@') {
+    type = 'person';
+  }
+
+  var mentionKey = type + '.' + query;
+  if (mentionSourceCache[mentionKey]) {
+    process(mentionSourceCache[mentionKey]);
+    return;
+  }
+
+  mentionLastQuery = query;
+  $j.getJSON('/members/search-mentions.json?query=' + query + '&type=' + type, function (data) {
+    mentionSourceCache[mentionKey] = data;
+    if (mentionLastQuery === query)
+      process(data);
+  })
+  .fail(function () { process([]); });
+}
+ 
+/*-----------------------------+
+ | Configuration: static pages |
+ +-----------------------------*/
+
+defaultTinyMCE = $H({
+	apply_source_formatting: true,
+	forced_root_block: 'p',
+	add_unload_trigger: false,
+	content_css: "/styles/master.css?t=20200816,/styles/tinymce.css,/tinymce/js/tinymce/plugins/mention/css/rte-content.css",
+	editor_selector: "", //needs to be defined in clones
+	fix_list_elements: true,
+	fix_nesting: true,
+	fix_table_elements: true,
+	remove_trailing_nbsp: true,
+	height: "300",
+	menubar : false,
+	mode: "textareas",
+	external_plugins: {"nanospell": "/source/nanospell/plugin.js"},
+	nanospell_server: "asp.net", // choose "php" "asp" "asp.net" or "java",
+	plugins: [
+		"autolink lists link charmap preview hr anchor",
+		"searchreplace wordcount visualblocks visualchars code fullscreen",
+		"insertdatetime media nonbreaking save table directionality",
+		"emoticons paste",
+		"mention", // https://github.com/CogniStreamer/tinyMCE-mention
+		"imagemanager documentmanager filemanager_base"
+	],
+	tab_focus: ":prev,:next",
+		theme: "modern",
+		toolbar1: "formatselect | undo redo | bold italic | bullist numlist | subscript superscript | indent outdent | link unlink anchor | imagemanager documentmanager | media charmap hr | cleanup code spellchecker",
+	remove_script_host: true,
+	relative_urls: false,
+    convert_urls: true,
+	// http://wiki.moxiecode.com/index.php/TinyMCE:Configuration/valid_child_elements
+	valid_child_elements: "a[%istrict_na|#text],"
+    + "abbr/acronym/caption/cite/code/del/dfn/em/h2/h3/h4/h5/h6/ins/kbd/pre/strong/sub/sup/th[%btrans|%istrict|#text],"
+    + "blockquote[%bstrict],"
+    + "dl[dd|dt],dd/div/dt/li/td[%btrans|%istrict|#text],"
+    + "map[area],object[embed|param],ol/ul[li],"
+    + "p[%btrans|%istrict|#text],"
+    + "table[caption|tbody|td|tfoot|thead|tr],tbody/tfoot/thead[tr],tr[td|th]",
+    // http://wiki.moxiecode.com/index.php/TinyMCE:Configuration/valid_elements
+	valid_elements: "@[class|id|data-*|aria-*],"
+	+ "-a[class|href|id|title|alt|rel|target],-abbr[title],-acronym[title],"
+	+ "area[alt|coords|href|shape],"
+	+ "-blockquote[style],br,button[type],"
+    + "-caption,-cite,-code,"
+    + "-del,-dfn[title],div[class|id|style],dl,dd,dt,"
+    + "-em/i,embed[*],"
+    + "-h1[id|style],-h2[id|style],-h3[id|style],-h4[id|style],-h5[id|style],-h6[id|style],"
+    + "hr[class|width|size|noshade],"
+    + "img[*],-ins," //img requires * to enable media plugin
+    + "iframe[align|frameborder|scrolling|src|width|height|style],"
+    + "-kbd,"
+    + "-li,"
+    + "map[id|name],"
+    + "object[*],-ol,"
+    + "-p[class|id|style],param[*],-pre,"
+    + "-span[id|class],-strong/b,-sub,-sup,"
+    + "-table[*],-tbody,#td[*],-tfoot,#th[*],-thead,-tr[*],"
+    + "-ul[class]",
+	visual_table_class: "mceTable",
+	width: "98%",
+
+	plugin_imagemanager_opts: {
+		bg: false,
+		folder: "/uploads/cms/images/"
+	},
+
+	plugin_documentmanager_opts: {
+		bg:false,
+		response: { ext: "xls|xlsx|ppt|pptx|doc|docx|pdf|txt|zip" },
+		upload_document_exts: "xls|xlsx|ppt|pptx|doc|docx|pdf|txt|zip",
+		folder:"/uploads/cms/documents/"
+	},
+
+	mentions: {
+	    delay: 100,
+	    insert: function (item) {
+	        return '<a href="' + item.url + '">@' + item.name + '</a>';
+	    },
+	    source: mentionSourceHandler
+	}
+});
+
+var frontEnd = defaultTinyMCE.clone();
+frontEnd.update({
+"editor_selector": "mceEditorFrontEnd"
+});
+tinymce.init(frontEnd.toObject());
+
+/*-------------------------------------+
+ | Configuration: small blocks of text |
+ +-------------------------------------*/
+var frontEndSummary = defaultTinyMCE.clone();
+frontEndSummary.update({
+"editor_selector": "mceEditorFrontEndSummary",
+"height": "200"
+});
+tinymce.init(frontEndSummary.toObject());
+
+/*-------------------------------------+
+ | Configuration: comments             |
+ +-------------------------------------*/
+var frontEndComments = defaultTinyMCE.clone();
+frontEndComments.update({
+"editor_selector": "mceEditorFrontEndComments",
+"height": "150",
+"toolbar1": "bold italic | bullist numlist | code",
+"valid_elements" : "-a[class|href|id|title|alt|target],-em/i,-li,-ol,-p[class|id|style],-span[id|class],-strong/b,-ul[class]"
+});
+tinymce.init(frontEndComments.toObject());
+
+/*-------------------------------------+
+ | Configuration: mass emails          |
+ +-------------------------------------*/
+var adminMassEmails = defaultTinyMCE.clone();
+adminMassEmails.update({
+    "editor_selector": "mceEditorAdminMassEmails",
+    "convert_urls": false,
+    "toolbar1": "bold italic | bullist numlist | link unlink | code",
+    "valid_elements": "-a[class|href|id|title|alt|target],-em/i,-li,-ol,-p[class|id|style],-span[id|class],-strong/b,-ul[class]"
+});
+tinymce.init(adminMassEmails.toObject());

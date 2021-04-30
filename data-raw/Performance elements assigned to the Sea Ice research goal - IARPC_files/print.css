@@ -1,0 +1,139 @@
+/*--------------------+
+ | Site: IARPC        |
+ | Part: Print styles |
+ +--------------------*/
+
+/* Hide unnecessary elements
+======================================================================*/
+#child-form,
+.contribute,
+.dataTables_filter,
+#feedback,
+.filter-nav,
+.filter-options,
+#footer,
+#header-nav,
+#hero .credit,
+#hero-actions,
+#layout-detail #content-secondary,
+.load,
+.month,
+#nav,
+#plan-footer,
+.prev-next,
+.r,
+#search,
+#subfooter,
+#team-nav-wrapper,
+#share-comment,
+#share-spacer-hr,
+.subscribe,
+.toolbar {
+    display: none;
+}
+
+
+/* Basics
+======================================================================*/
+body { font-size: 14px; }
+h1 { font-size: 24px; margin-bottom: 0.7em; }
+h2 { font-size: 20px; }
+h3 { font-size: 18px; }
+h4 { font-size: 16px; }
+hr { background: none; border-bottom: 1px solid #ccc; color: #ddd; }
+thead th { font-weight: bold; }
+
+
+/* Core layout
+======================================================================*/
+body,
+.body,
+.c2l, .c2r, .c3l, .c3m, .c3r,
+#content,
+#content-primary,
+#content-secondary,
+#content-wrapper,
+#full .body,
+#header,
+#header-content,
+#hero-content,
+#home #content-primary,
+#home #content-secondary,
+#home #content-tertiary,
+#layout-detail #content-primary,
+#layout-member-home #content-primary,
+#layout-member-home #content-secondary,
+#layout-member-home #content-tertiary,
+.members,
+#static #content-primary,
+#static #content-secondary {
+    background: none;
+    border: 0;
+    float: none;
+    margin: 0;
+    max-width: none;
+    min-width: none;
+    padding: 0;
+    width: auto;
+}
+
+
+/* Content
+======================================================================*/
+
+/* Action */
+.action { background: #fff; border: 1px solid #ccc; color: #000; }
+
+/* Banner */
+.banner, .banner .credit, .banner .overlay { position: static; }
+.banner .credit { color: #777; text-align: left; text-shadow: none; }
+.banner .overlay { font-size: 1em; padding: 0; }
+.banner .overlay h1 { margin: 0; }
+
+/* Callouts */
+#full .call-l, #full .pull-l { margin-left: 0; }
+#full .call-r, #full .pull-r { margin-right: 0; }
+
+/* Card */
+    /* Recent activity */
+    .recent-activity .card { float: none; margin-right: 0; width: auto; }
+
+/* Header */
+#header { margin-bottom: 20px; }
+
+    /* Logo */
+    #logo { float: none; margin-right: 0; width: 50%; }
+    #logo img { max-height: none; }
+
+/* Hero */
+#hero { background: none !important; border: 3px double #ddd; margin-bottom: 30px; padding: 30px; }
+#hero h1 { font-size: 30px; }
+#hero, #hero h1 { color: #000; }
+#hero-primary { background: none; padding: 0; width: auto; }
+
+/* Intros */
+.intro { font-size: 18px; margin-bottom: 30px; width: auto; }
+.intro h2 { font-size: 20px; }
+
+/* Milestones */
+    /* Actions */
+    .milestone-actions .col-action { width: 75%; }
+    .milestone-actions .col-followup { width: 25%; }
+
+/* Muted text */
+.mute { color: #555; font-size: 12px; }
+
+/* News */
+.news dt { font-size: 24px; }
+
+/* Plan */
+    /* Research areas */
+    .research-area-summaries li { page-break-inside: avoid; }
+    .research-area-summaries .title { font-size: 18px; }
+
+/* Teams */
+.teams li { page-break-inside: avoid; }
+
+    /* Summaries */
+    .team-summaries li { page-break-inside: avoid; }
+    .team-summaries .title { font-size: 18px; }
