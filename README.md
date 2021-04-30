@@ -2,7 +2,7 @@
 
 These scripts were intended to collect PDF committee reports from congress.gov relating to the arctic. The project leader was Gifford Wong. 
 
-## Scripts 
+## Python Notebooks
 
 1. acquire_comittee_reports_pdf.ipynb 
 
@@ -14,4 +14,9 @@ It was intended to be used with ktrain's end-to-end question answering capabilit
 
 This notebook takes the outputs from the *acquire_comittee_reports_pdf.ipynb* to ask questions of the committee reports
 
+## R Scripts 
+
+1. acquire.R 
+
+This file scrapes the 122 performance elements from iarpc's member site and outputs the data in csv formats. 
 
