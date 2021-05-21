@@ -190,7 +190,7 @@ iarpc_df <-
   separate_rows(alignment, sep = ", ") %>%
   # The first agency listed is for each section is the lead. Adding a boolean
   # for lead agency
-  group_by(section_title) %>%
+  group_by(task) %>% # was grouped by section title, changed on 2021-05-21 EC
   mutate(
     is_lead_agency = if_else(row_number() == 1, TRUE, FALSE)
   ) %>%
