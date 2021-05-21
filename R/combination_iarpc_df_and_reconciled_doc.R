@@ -28,6 +28,9 @@ iarpc_df <-
 # join
 joined_iarpc_reconciled_df <-
   iarpc_df %>%
+  filter(is_lead_agency) %>%
+  select(task, agency) %>%
+  rename("lead_agency" = "agency") %>%
   left_join(condensed_file, by = "task") %>%
   select(-starts_with("is_related_to"))
 
