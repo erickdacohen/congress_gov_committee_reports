@@ -38,3 +38,8 @@ write_csv(
   joined_iarpc_reconciled_df,
   paste0(data_output, "/", Sys.Date(), "_joined_iarpc_reconciled_df.csv")
 )
+
+write_rds(
+  joined_iarpc_reconciled_df,
+  paste0(data_output, "/", Sys.Date(), "_joined_iarpc_reconciled_df.rds")
+)
