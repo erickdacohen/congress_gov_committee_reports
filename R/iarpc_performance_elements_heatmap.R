@@ -61,6 +61,11 @@ write.csv(
   file = paste0(data_output, "/", todays_date, "_iarpc_coded_df_sums.csv")
 )
 
+write_rds(
+  iarpc_coded_df_sums,
+  file = paste0(data_output, "/", todays_date, "_iarpc_coded_df_sums.rds")
+)
+
 # Heatmap full
 iarpc_coded_df_sums %>%
   filter(primary_stpi_assignment != "All") %>%

@@ -34,6 +34,7 @@ joined_iarpc_reconciled_df <-
   left_join(condensed_file, by = "task") %>%
   select(-starts_with("is_related_to"))
 
+
 write_csv(
   joined_iarpc_reconciled_df,
   paste0(data_output, "/", Sys.Date(), "_joined_iarpc_reconciled_df.csv")

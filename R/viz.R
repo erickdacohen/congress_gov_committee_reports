@@ -1,18 +1,45 @@
+# Viz
 suppressPackageStartupMessages({
-  library(dplyr)
   library(readr)
+  library(here)
   library(ggplot2)
+  library(dplyr)
   library(forcats)
+  library(tidyr)
 })
 
-data_raw <- here("data-raw/")
-data_output <- here("data-output/")
+theme_set(theme_light())
 
-iarpc_file_name <- "2021-05-23_joined_iarpc_reconciled_df.rds"
+data_output <- here("data-output")
+summed_agency_filename <- "2021-05-24_joined_sumed_iarpc_with_agency.rds"
 
-iarpc_reconciled_df <-
+iarpc_df <-
   read_rds(
-    paste0(data_output, "/", iarpc_file_name)
+    paste(data_output, summed_agency_filename, sep = "/")
   )
 
-iarpc_reconciled_df
+iarpc_df %>%
+  pivot_longer(
+    c(pa1_health_resilience:fa5_tech_and_innovation)
+  )
+
+# by agency
+iarpc_df %>%
+  pivot_longer(
+    c(pa1_health_resilience:fa5_tech_and_innovation)
+  ) %>%
+  group_by(lead_agency) %>%
+  summarise(
+    sum = sum(value), .groups = "drop"
+  ) %>%
+  # ungroup() %>%
+  filter(!is.na(lead_agency)) %>%
+  mutate(
+    lead_agency = as.factor(lead_agency) %>%
+      fct_lump_n(n = 5)
+    # lead_agency = fct_reorder(lead_agency, sum, .fun = median)
+  )
+
+  ggplot(aes(x = sum, y = lead_agency)) +
+  geom_col()
+
