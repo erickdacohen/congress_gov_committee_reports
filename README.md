@@ -1,4 +1,4 @@
-# IARPC Congress.gov Committee Reports
+# Congress.gov Committee Reports
 
 Scripts to collect PDF committee reports from congress.gov relating to the arctic. Intended for use with [ktrain](https://github.com/amaiya/ktrain).
 
